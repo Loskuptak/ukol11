@@ -13,10 +13,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Set up Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: '3.8'
 
@@ -26,10 +26,18 @@ jobs:
           pip install bandit
 
       - name: Run Bandit
-        run: bandit -r ./app.py -lll -f html -o bandit-report.html -x tests || exit 1
-
+        id: bandit_scan
+        run: |
+          bandit -r ./app.py -lll -f html -o bandit-report.html || echo "BANDIT_FAILED=true" >> $GITHUB_ENV
+        
       - name: Upload Bandit report
         uses: actions/upload-artifact@v4
         with:
           name: bandit-report
           path: bandit-report.html
+
+      - name: fail az po uploadu
+        if: env.BANDIT_FAILED == 'true'
+        run: |
+          echo "Bandit nasel kritikal, stopuju job."
+          exit 1
