@@ -7,7 +7,7 @@ on:
   pull_request:
     branches:
       - main
-
+      
 jobs:
   Bandit:
     runs-on: ubuntu-latest
@@ -25,19 +25,17 @@ jobs:
           python -m pip install --upgrade pip
           pip install bandit
 
-      - name: Run Bandit
-        id: bandit_scan
+      - name: Run pro komplet report
         run: |
-          bandit -r ./app.py -lll -f html -o bandit-report.html || echo "BANDIT_FAILED=true" >> $GITHUB_ENV
-        
-      - name: Upload Bandit report
+          bandit -r ./app.py -f html -o bandit-report.html
+
+      - name: Run pro fail check
+        run: |
+          bandit -r ./app.py -s H || exit 1
+
+      - name: uploadnout report at to dopadne jakkoli
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: bandit-report
           path: bandit-report.html
-
-      - name: fail az po uploadu
-        if: env.BANDIT_FAILED == 'true'
-        run: |
-          echo "Bandit nasel kritikal, stopuju job."
-          exit 1
